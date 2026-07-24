@@ -1,0 +1,45 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: proyecto
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/academic_events_db}
+    username: ${DB_USERNAME:ups}
+    password: ${DB_PASSWORD:ups}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:cambia-este-secreto-en-produccion-1234567890}
+    access-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+  swagger:
+    username: ${SWAGGER_USER:evaluador}
+    password: ${SWAGGER_PASSWORD:cambia-esto}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
