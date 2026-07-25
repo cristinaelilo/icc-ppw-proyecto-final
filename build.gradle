@@ -17,20 +17,58 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+	jjwtVersion = '0.12.6'
+	openpdfVersion = '1.3.42'
+	poiVersion = '5.3.0'
+	springdocVersion = '3.0.3'
+}
+
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// --- Web / Core ---
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// --- Base de datos / migraciones ---
 	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-database-postgresql'
+
+	// --- JWT ---
+	// IMPORTANTE: Spring Boot 4 usa Jackson 3 por defecto. jjwt-jackson (0.12.x)
+	// todavia depende de Jackson 2 y genera conflicto de clases en runtime.
+	// Por eso usamos jjwt-gson (serializacion via Gson) en lugar de jjwt-jackson.
+	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-gson:${jjwtVersion}"
+
+	// --- Documentacion OpenAPI / Swagger (version compatible con Boot 4 / Jackson 3) ---
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+	// --- Reportes descargables ---
+	implementation "com.github.librepdf:openpdf:${openpdfVersion}"
+	implementation "org.apache.poi:poi-ooxml:${poiVersion}"
+
+	// --- Lombok ---
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// --- Desarrollo ---
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// --- Tests (starters de test dedicados de Boot 4) ---
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+	testImplementation 'com.h2database:h2'
 	testCompileOnly 'org.projectlombok:lombok'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
