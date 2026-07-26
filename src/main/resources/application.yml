@@ -9,14 +9,10 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/academic_events_db}
     username: ${DB_USERNAME:ups}
     password: ${DB_PASSWORD:ups}
-    hikari:
-      maximum-pool-size: ${DB_POOL_SIZE:5}
 
   jpa:
     open-in-view: false
     hibernate:
-      # Las tablas ya existen (scripts SQL entregados por el docente).
-      # La app NUNCA crea ni modifica el esquema automaticamente.
       ddl-auto: validate
     show-sql: false
 
@@ -32,48 +28,18 @@ spring:
       password: ${REDIS_PASSWORD:}
 
 app:
-  timezone:
-    business: America/Guayaquil
   jwt:
-    secret: ${JWT_SECRET:CHANGE_ME_SUPER_SECRET_KEY_CHANGE_ME_1234567890}
-    access-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000}      # 15 minutos
-    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000} # 7 dias
+    secret: ${JWT_SECRET:cambia-este-secreto-en-produccion-1234567890}
+    access-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
   swagger:
     username: ${SWAGGER_USER:evaluador}
-    password: ${SWAGGER_PASSWORD:CHANGE_ME}
-  rate-limit:
-    login:
-      limit: 5
-      window-seconds: 60
-    register:
-      limit: 3
-      window-seconds: 3600
-    public:
-      limit: 60
-      window-seconds: 60
-    authenticated:
-      limit: 120
-      window-seconds: 60
-    reports:
-      limit: 5
-      window-seconds: 60
-    block:
-      max-failed-attempts: 5
-      block-duration-seconds: 900
+    password: ${SWAGGER_PASSWORD:cambia-esto}
 
 management:
   endpoints:
     web:
       exposure:
         include: health
-  endpoint:
-    health:
-      show-details: never
-
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
