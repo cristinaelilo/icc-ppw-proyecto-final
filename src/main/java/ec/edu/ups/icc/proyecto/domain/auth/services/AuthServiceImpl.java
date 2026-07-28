@@ -148,7 +148,10 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidTokenException("Refresh token expirado");
         }
 
-        Long userId = Long.valueOf(String.valueOf(claims.get("uid")));
+        // IMPORTANTE: con jjwt-gson los numeros genericos se deserializan como Double.
+        // JJWT no convierte automaticamente Double->Long, asi que se pide como Number
+        // (Double SI es un Number) y se trunca con longValue().
+        Long userId = claims.get("uid", Number.class).longValue();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new InvalidTokenException("Usuario no encontrado para este token"));
 
