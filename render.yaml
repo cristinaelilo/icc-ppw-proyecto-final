@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: academic-events-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: DB_URL
+        fromDatabase:
+          name: academic-events-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: academic-events-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: academic-events-db
+          property: password
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_SSL_ENABLED
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRATION
+        value: "900000"
+      - key: JWT_REFRESH_EXPIRATION
+        value: "604800000"
+      - key: ALLOWED_ORIGINS
+        value: "https://tu-frontend.example.com"
+      - key: SWAGGER_USER
+        sync: false
+      - key: SWAGGER_PASSWORD
+        sync: false
+      - key: JAVA_TOOL_OPTIONS
+        value: "-Xmx256m -Xss512k -XX:MaxMetaspaceSize=128m"
+
+databases:
+  - name: academic-events-db
+    plan: free
+    databaseName: academic_events_db
+    user: ups
