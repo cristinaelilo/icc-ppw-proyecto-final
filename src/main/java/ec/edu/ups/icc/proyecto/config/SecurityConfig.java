@@ -105,6 +105,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout")
                         .permitAll()
                     .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/error").permitAll()
                     .requestMatchers("/actuator/**").denyAll()
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/events/**", "/api/categories/**")
                         .permitAll()
