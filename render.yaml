@@ -8,10 +8,18 @@ services:
     envVars:
       - key: PORT
         value: "8080"
-      - key: DB_URL
+      - key: DB_HOST
         fromDatabase:
           name: academic-events-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: academic-events-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: academic-events-db
+          property: database
       - key: DB_USERNAME
         fromDatabase:
           name: academic-events-db
@@ -20,6 +28,8 @@ services:
         fromDatabase:
           name: academic-events-db
           property: password
+      # Redis administrado (Upstash) - configurar manualmente en el dashboard de Render
+      # despues de crear la base de datos Redis en upstash.com (ver README de despliegue).
       - key: REDIS_HOST
         sync: false
       - key: REDIS_PORT
@@ -48,3 +58,5 @@ databases:
     plan: free
     databaseName: academic_events_db
     user: ups
+
+    
