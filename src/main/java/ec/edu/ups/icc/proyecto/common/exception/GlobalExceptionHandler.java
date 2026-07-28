@@ -11,6 +11,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -63,9 +64,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
+    /**
+     * Se lanza cuando se pide una ruta que no existe en absoluto (ej: "/" o
+     * "/favicon.ico", que Spring intenta resolver como recurso estatico).
+     * Sin este manejador especifico, caeria en handleGeneric() y devolveria
+     * un 500 enganoso para algo que en realidad es un simple 404.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, HttpServletRequest request) {
+        ErrorResponse body = new ErrorResponse(
+                OffsetDateTime.now(), HttpStatus.NOT_FOUND.value(), "RESOURCE_NOT_FOUND",
+                "El recurso solicitado no existe", request.getRequestURI(), null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
-        // TEMPORAL: se imprime el stack trace completo para diagnosticar el 500.
         log.error("Error no controlado en {} {}", request.getMethod(), request.getRequestURI(), ex);
 
         ErrorResponse body = new ErrorResponse(
