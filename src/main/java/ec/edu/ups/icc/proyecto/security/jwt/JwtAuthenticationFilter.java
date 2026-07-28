@@ -26,7 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
@@ -36,7 +35,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 Claims claims = jwtTokenProvider.parseClaims(token);
                 if ("access".equals(claims.get("type"))) {
-                    Long userId = Long.valueOf(String.valueOf(claims.get("uid")));
+                    // IMPORTANTE: con jjwt-gson (necesario para evitar el conflicto con Jackson 3
+                    // de Spring Boot 4), los numeros genericos del JWT se deserializan como Double,
+                    // nunca como Long/Integer. JJWT NO convierte automaticamente Double->Long
+                    // (solo String/Date/Long/Integer/Short/Byte), asi que se pide como Number
+                    // (Double SI es un Number, no requiere conversion) y se trunca con longValue().
+                    Long userId = claims.get("uid", Number.class).longValue();
                     String email = claims.getSubject();
                     List<String> roles = claims.get("roles", List.class);
                     Collection<String> roleNames = roles == null ? List.of() : roles;

@@ -34,8 +34,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// --- Base de datos / migraciones ---
+	// IMPORTANTE (Spring Boot 4): a partir de Boot 4 la auto-configuracion de Flyway
+	// se movio a su propio modulo. Ya no basta con 'org.flywaydb:flyway-core';
+	// hay que usar el starter 'spring-boot-starter-flyway' para que Spring Boot
+	// detecte y ejecute las migraciones automaticamente al arrancar.
 	runtimeOnly 'org.postgresql:postgresql'
-	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.springframework.boot:spring-boot-starter-flyway'
 	implementation 'org.flywaydb:flyway-database-postgresql'
 
 	// --- JWT ---
