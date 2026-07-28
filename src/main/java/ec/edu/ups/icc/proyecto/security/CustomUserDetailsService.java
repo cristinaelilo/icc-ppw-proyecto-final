@@ -1,8 +1,8 @@
 package ec.edu.ups.icc.proyecto.security;
 
-import ec.edu.ups.icc.proyecto.domain.user.Role;
-import ec.edu.ups.icc.proyecto.domain.user.User;
-import ec.edu.ups.icc.proyecto.domain.user.UserRepository;
+import ec.edu.ups.icc.proyecto.domain.user.model.Role;
+import ec.edu.ups.icc.proyecto.domain.user.model.User;
+import ec.edu.ups.icc.proyecto.domain.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 /**
  * NOTA: este servicio no se usa a traves del AuthenticationManager de Spring
  * Security (el login se valida manualmente en AuthServiceImpl con
- * PasswordEncoder). Se deja disponible por si se necesita en el futuro
- * (por ejemplo, para HTTP Basic en Swagger, o pruebas con @WithUserDetails).
+ * PasswordEncoder). Se deja disponible para el futuro (ej. HTTP Basic en
+ * Swagger, o pruebas con @WithUserDetails).
  */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
