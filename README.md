@@ -203,5 +203,79 @@ Vale la pena dejarlo anotado por si a alguien más le pasa lo mismo:
 
 ## Bruno
 
-La colección con todos los endpoints se mostrará a continuación:
+Toda la API la probamos con **Bruno**, request por request, simulando los distintos roles (admin, organizador, participante) para verificar que las reglas de negocio y los permisos funcionaran de verdad .
 
+### Bloque 1 — Salud y documentación
+
+Antes de probar cualquier endpoint de negocio, confirmamos que el servidor estuviera arriba y que la documentación de Swagger respondiera correctamente (protegida con usuario y clave aparte del login normal).
+
+**`GET /actuator/health`** — el servidor responde `UP`, confirma que la app, la base de datos y Redis están conectados.
+![healt](src/evidencias/healt.png)
+
+**`GET /v3/api-docs`** (con Basic Auth) — la especificación OpenAPI completa, protegida por credenciales de evaluación, no cualquiera puede verla.
+![Api Docs](src/evidencias/api-docs.png)
+
+### Bloque 2 — Autenticación
+
+Acá probamos el flujo completo de login/registro y dos reglas de negocio importantes: que no se puedan repetir correos, y que el mensaje de error sea el mismo tanto si el correo no existe como si la clave está mal (para no darle pistas a alguien que intenta adivinar contraseñas).
+
+**Registro de un usuario nuevo** — se crea con rol PARTICIPANT automáticamente.
+![Registro](src/evidencias/registro.png)
+
+**Registro con el mismo correo otra vez** — debe rechazarlo con 409, no se permiten cuentas duplicadas.
+![registro-correo-repetido](src/evidencias/correo-repetido.png)
+
+**Login correcto (admin)** — devuelve el `accessToken` y el `refreshToken`.
+![login](src/evidencias/login.png)
+
+**Login con la clave mala** — mensaje de error genérico, no dice si el problema fue el correo o la clave.
+![login-con-clave-mala](src/evidencias/login-clave-mala.png)
+
+**`GET /api/auth/me`** con el token recién obtenido — devuelve los datos del usuario autenticado y sus roles.
+![Perfil autenticado](src/evidencias/perfil-autenticado.png)
+
+### Bloque 3 — Categorías
+
+Las categorías las administra solo el ADMIN. Probamos que un organizador no pueda crear una (aunque esté logueado y con un token válido), y que el admin sí pueda.
+
+**Listado público de categorías** — cualquiera puede verlas, sin necesidad de estar logueado.
+![Listado público](src/evidencias/Listado-publico.png)
+
+**Intento de crear categoría con token de organizador** — da 403, porque ese rol no tiene permiso para esta acción.
+![Crear categoría con token de organizador](src/evidencias/token-organizador.png)
+
+**Crear categoría con token de admin** — esta sí se crea sin problema.
+![Crear categoría con token de admin](src/evidencias/token-admin.png)
+
+### Bloque 4 — Eventos
+
+Este es el módulo más grande. Probamos la creación, publicación, y sobre todo la regla de **propiedad del recurso**: un organizador solo puede editar sus propios eventos, ni siquiera otro organizador (que sí tiene el rol correcto) puede tocarlos.
+
+**Crear evento** (como organizador) — queda en estado `DRAFT` hasta que se publique.
+![Crear evento](src/evidencias/crear-evento.png)
+
+**Publicar el evento** — pasa de `DRAFT` a `PUBLISHED`, recién ahí aparece en el catálogo público.
+![Publicar el evento](src/evidencias/publicar-evento.png)
+
+**Intento de editar el evento con el token de OTRO organizador** (no el dueño) — da 403, aunque el segundo organizador también tenga rol ORGANIZER. La validación es por dueño real del evento, no solo por rol.
+![Editar evento con otro organizador](src/evidencias/evento-otro-organizador.png)
+
+**`GET /api/events/mine`** (la organizadora dueña) — le muestra sus propios eventos, en cualquier estado.
+![Mis eventos](src/evidencias/mis-eventos.png)
+
+### Bloque 5 — Sesiones
+
+Las sesiones dependen de que exista un evento y de que quien las cree sea el dueño de ese evento.
+
+**Crear una sesión dentro del evento** — se agrega correctamente con su horario y expositor.
+![Crear sesión](src/evidencias/crear-sesion.png)
+
+### Bloque 6 — Inscripciones
+
+Esta es la parte más delicada del proyecto: la inscripción no queda confirmada de inmediato, pasa primero por un estado `PENDING` que el organizador tiene que aprobar. Y probamos también que no se pueda inscribir dos veces a la misma persona en el mismo evento.
+
+**Solicitar inscripción** (participante) — queda en `PENDING`, todavía no consume cupo.
+![solicitar inscripcion](src/evidencias/solicitar-inscripcion-evento-12.png)
+
+**Solicitar de nuevo, mismo participante, mismo evento** — la API lo rechaza con 422 porque ya tiene una inscripción activa.
+![mismarequest](src/evidencias/misma-request.png)
