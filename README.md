@@ -2,7 +2,7 @@
 
 Proyecto integrador de la materia Programación y Plataformas Web (PPW), Universidad Politécnica Salesiana.
 
-Hecho por: 
+Autoras: 
 
 **Cristina Loja** **clojap1@est.ups.edu.ec** 
 
@@ -23,10 +23,17 @@ La hicimos en Spring Boot (versión 4.1, con Java 25) porque así lo pedía la p
   - usuario: `evaluador` / clave: `evaluador123`
 - Repo: https://github.com/cristinaelilo/icc-ppw-proyecto-final
 
-Para probar rápido, este usuario ya viene creado en la base de datos con rol ADMIN:
-```
+## Usuarios de prueba
+
+Ya vienen creados en la base de datos, listos para probar login:
+
+**Administrador**
+
 admin@academic.test / Password123*
-```
+
+**Usuario normal (participante)**
+
+carlos.velez@academic.test / Password123*
 
 Dos cosas que vale la pena saber antes de entrar:
 - Render (el hosting gratuito que usamos) "duerme" el servicio si nadie lo usa por 15 minutos. La primera petición después de eso tarda como medio minuto en responder mientras despierta. No es que esté roto, solo se demora.
@@ -67,6 +74,7 @@ Cosas del modelo que quizás no se ven a simple vista:
 El diagrama entidad-relación está en:
 
 ![Diagrama E-R](src/evidencias/Diagrama-ER.png)
+
 ## Seguridad
 
 El login devuelve dos tokens: uno de acceso que dura poco (15 minutos) y uno de refresco que dura una semana y se puede usar para pedir uno nuevo sin volver a meter la contraseña. El refresh token se guarda hasheado en la base (nunca en texto plano) y cada vez que se usa se revoca y se genera uno nuevo, para que si alguien roba un token viejo ya no le sirva.
@@ -318,4 +326,31 @@ Mandamos varios intentos de login seguidos con credenciales inválidas para comp
 
 ![Login repetido 6 veces seguidas](src/evidencias/Error429.png)
 
-## Evidencias swagger
+### Evidencias swagger
+
+## Pruebas contra la URL pública desplegada
+
+Verificamos que el despliegue real en Render funcione correctamente, probando directamente contra la URL pública en vez de `localhost`.
+
+**Swagger UI cargando en producción** — la documentación interactiva está accesible desde la URL pública, protegida con usuario y contraseña.
+
+![Swagger UI](src/evidencias/Swaggger.png)
+
+**Login en producción** (admin) — genera los tokens igual que en local, ya contra la base de datos real.
+
+![alt text](src/evidencias/loginProduccion.png)
+
+![alt text](src/evidencias/loginProduccion1.png)
+
+![alt text](src/evidencias/autorizacion.png)
+
+**Perfil autenticado en producción** — confirma que el JWT también valida correctamente en el entorno desplegado.
+
+![alt text](src/evidencias/perfilProduccion.png)
+
+**Catálogo de eventos en producción** — el listado público funciona igual que en local.
+
+![alt text](src/evidencias/eventosProduccion.png)
+
+![alt text](src/evidencias/eventosProduccion1.png)
+
