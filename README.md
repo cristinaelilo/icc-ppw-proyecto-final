@@ -275,7 +275,47 @@ Las sesiones dependen de que exista un evento y de que quien las cree sea el due
 Esta es la parte más delicada del proyecto: la inscripción no queda confirmada de inmediato, pasa primero por un estado `PENDING` que el organizador tiene que aprobar. Y probamos también que no se pueda inscribir dos veces a la misma persona en el mismo evento.
 
 **Solicitar inscripción** (participante) — queda en `PENDING`, todavía no consume cupo.
+
 ![solicitar inscripcion](src/evidencias/solicitar-inscripcion-evento-12.png)
 
 **Solicitar de nuevo, mismo participante, mismo evento** — la API lo rechaza con 422 porque ya tiene una inscripción activa.
+
 ![mismarequest](src/evidencias/misma-request.png)
+
+**Confirmar la inscripción** (la organizadora dueña del evento) — pasa de `PENDING` a `CONFIRMED`.
+
+![Confirmar organizador](src/evidencias/confirmarOrganizador.png)
+
+**Ver el evento después de confirmar** — se revisa el `availableCapacity`, prueba de que el cupo se descontó correctamente al confirmar.
+
+![Ver el evento](src/evidencias/evento.png)
+
+### Bloque 7 — Usuarios (solo ADMIN)
+
+**Un organizador intentando listar usuarios** — 403, esa ruta es exclusiva del admin.
+
+![listar Usuarios Con Token De Organizador](src/evidencias/ListarTo.png)
+
+**Bloquear un usuario** (admin) — cambia su `status` a `BLOCKED`. Un usuario bloqueado ya no puede iniciar sesión aunque la clave sea correcta, así lo comprobamos.
+
+![bloquear usuario](src/evidencias/bloquearUsuario.png)
+
+### Bloque 8 — Reportes
+
+**Descargar el PDF de inscritos de un evento** (el organizador dueño) — el archivo se genera con los datos reales de las inscripciones.
+
+![pdf inscritos](src/evidencias/pdf-inscritos.png)
+
+**Descargar el certificado de inscripción** (el participante dueño de esa inscripción) — solo se puede si la inscripción está `CONFIRMED`.
+
+![Certificado de inscripcion](src/evidencias/certificadoInscripcion.png)
+
+### Bloque 9 — Límite de peticiones (Redis)
+
+Mandamos varios intentos de login seguidos con credenciales inválidas para comprobar que Redis efectivamente frena los abusos, sin necesidad de tocar la base de datos principal.
+
+**6 intentos de login seguidos** — a partir del 6.º intento responde `429 Too Many Requests`, con el header `Retry-After` indicando cuánto hay que esperar.
+
+![Login repetido 6 veces seguidas](src/evidencias/Error429.png)
+
+## Evidencias swagger
