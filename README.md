@@ -184,6 +184,8 @@ http://localhost:8080/actuator/health
 
 Debería responder `{"status":"UP"}`.
 
+![Status Up ](src/evidencias/statusUp.png)
+
 ## Variables de entorno
 
 Están en `.env.example`. Las importantes son la conexión a la base de datos, la de Redis, el secreto para firmar los JWT, y las credenciales de Swagger. En Render la conexión a la base se arma con `DB_HOST`, `DB_PORT` y `DB_NAME` por separado (porque la cadena de conexión que da Render por defecto no trae el prefijo `jdbc:` que necesita Spring, tuvimos que armarla nosotras manualmente).
@@ -195,6 +197,8 @@ Están en `.env.example`. Las importantes son la conexión a la base de datos, l
 ```
 
 Tenemos pruebas con JUnit y Mockito para lo que consideramos más delicado del proyecto: el login (que no revele si el correo existe o no, que bloquee cuentas), y las inscripciones (que no se pueda inscribir dos veces, que no deje confirmar sin cupos, que respete la ventana de fechas).
+
+![reporte de ejecucion de tests](src/evidencias/reporte-tests.png)
 
 ## Despliegue
 
@@ -326,9 +330,8 @@ Mandamos varios intentos de login seguidos con credenciales inválidas para comp
 
 ![Login repetido 6 veces seguidas](src/evidencias/Error429.png)
 
-### Evidencias swagger
 
-## Pruebas contra la URL pública desplegada
+### Pruebas contra la URL pública desplegada
 
 Verificamos que el despliegue real en Render funcione correctamente, probando directamente contra la URL pública en vez de `localhost`.
 
@@ -353,4 +356,27 @@ Verificamos que el despliegue real en Render funcione correctamente, probando di
 ![alt text](src/evidencias/eventosProduccion.png)
 
 ![alt text](src/evidencias/eventosProduccion1.png)
+
+
+## Conclusiones
+
+Con este proyecto logramos aplicar de punta a punta una arquitectura cliente-servidor real, no solo en teoría: separamos el backend por dominios y capas, protegimos cada endpoint según el rol y la propiedad del recurso (no solo validando el rol, sino verificando que el organizador sea realmente el dueño del evento antes de dejarlo modificar algo), y llevamos toda esa lógica hasta un entorno público real, con base de datos y Redis en la nube, no solo en `localhost`.
+
+Lo que más nos costó no fue escribir el código en sí, sino los detalles de integración que no salen en ningún tutorial: que Spring Boot 4 cambió cómo detecta la autoconfiguración de Flyway, que Gson serializa los números distinto a Jackson y eso rompe silenciosamente la validación de un JWT, o que la URL de conexión que entrega Render no trae el prefijo que Spring necesita. Ese tipo de problemas nos obligó a leer logs con calma, aislar la causa real (en vez de solo tapar el síntoma), y entender de verdad cómo funciona cada pieza por dentro, no solo copiarla y que funcione.
+
+También aprendimos lo importante que es probar cada regla de negocio pensando en "cómo se puede romper esto": qué pasa si dos personas confirman al mismo tiempo el último cupo, qué pasa si alguien intenta editar un evento que no es suyo, qué pasa si se cae la contraseña de un correo que no existe. Esas preguntas nos llevaron a decisiones concretas en el código (bloqueo de fila al confirmar inscripciones, mensajes de error genéricos en el login, validación de propiedad además del rol) que si no las probamos a propósito, seguramente se nos hubieran pasado.
+
+## Recomendaciones
+
+Para quien retome este proyecto o construya algo parecido:
+
+- Antes de elegir versiones muy nuevas de un framework (como Spring Boot 4, que en este momento es reciente), conviene revisar bien la guía de migración oficial, porque cambian nombres de dependencias y comportamientos por defecto que no están documentados en la mayoría de tutoriales todavía.
+- Vale la pena escribir las pruebas unitarias de las reglas de negocio más delicadas (control de cupo, duplicados, permisos) antes de desplegar, porque son mucho más rápidas de correr que estar probando manualmente cada caso en Bruno cada vez que se cambia algo.
+- Si van a usar un servicio gratuito como Render, hay que tomar en cuenta desde el principio que "duerme" el servicio sin uso, y planificar el video o la demo en vivo sabiendo que la primera petición puede tardar en responder.
+
+
+Proyecto desarrollado en pareja para Programación y Plataformas Web (PPW), Universidad Politécnica Salesiana.
+
+- **Cristina Loja** — https://github.com/cristinaelilo
+- **Denisse Paredes** — https://github.com/Pestefania
 
